@@ -1,0 +1,123 @@
+name: Security CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-security:
+    name: Repository Security
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Reject Groq-style secrets
+        shell: bash
+        run: |
+          if git grep -n -I -E \
+            'gsk_[A-Za-z0-9_-]{20,}' \
+            -- .; then
+            echo "Potential Groq credential found in repository."
+            exit 1
+          fi
+
+          echo "No Groq-style credentials found."
+
+      - name: Reject forbidden environment files
+        shell: bash
+        run: |
+          forbidden_files=(
+            ".env"
+            ".env.production"
+            "frontend/.env"
+            "frontend/.env.production"
+          )
+
+          failed=0
+
+          for file in "${forbidden_files[@]}"; do
+            if git ls-files --error-unmatch "$file" \
+              >/dev/null 2>&1; then
+              echo "Forbidden environment file is tracked: $file"
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+
+          echo "No forbidden environment files are tracked."
+
+      - name: Reject browser-side secret variables
+        shell: bash
+        run: |
+          if git grep -n -I -E \
+            'VITE_(GROQ_API_KEY|RETAILOPS_API_KEY)[[:space:]]*=' \
+            -- frontend \
+            ':!frontend/src/services/security.test.ts' \
+            ':!frontend/src/services/productionConfig.test.ts'; then
+            echo "Forbidden browser-side secret variable found."
+            exit 1
+          fi
+
+          echo "No browser-side secret assignments found."
+
+      - name: Reject large tracked files
+        shell: bash
+        run: |
+          failed=0
+
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              size=$(stat -c%s "$file")
+
+              if [ "$size" -gt 10485760 ]; then
+                echo "Tracked file exceeds 10 MB: $file"
+                failed=1
+              fi
+            fi
+          done < <(git ls-files)
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+
+          echo "No tracked files exceed 10 MB."
+
+      - name: Verify raw datasets are not tracked
+        shell: bash
+        run: |
+          if git ls-files |
+            grep -E '^data/(raw|processed)/'; then
+            echo "Raw or generated datasets are tracked."
+            exit 1
+          fi
+
+          echo "Raw and processed datasets are not tracked."
+
+      - name: Verify generated model binaries are not tracked
+        shell: bash
+        run: |
+          if git ls-files |
+            grep -E '\.(joblib|pkl|pickle)$'; then
+            echo "Generated model artifact is tracked."
+            exit 1
+          fi
+
+          echo "Generated model artifacts are not tracked."

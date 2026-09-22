@@ -1,0 +1,141 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  validate-version:
+    name: Validate Release Version
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read and validate version
+        id: version
+        shell: bash
+        run: |
+          version="$(cat VERSION)"
+          tag="${GITHUB_REF_NAME}"
+
+          echo "VERSION file: $version"
+          echo "Git tag: $tag"
+
+          if [ "$tag" != "v$version" ]; then
+            echo "Tag $tag does not match VERSION $version."
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  release-validation:
+    name: Release Validation
+
+    needs:
+      - validate-version
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Validate backend dependencies
+        run: pip check
+
+      - name: Run backend regression
+        env:
+          RETAILOPS_ENV: testing
+        run: python -m pytest -q
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test
+
+      - name: Run frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Scan frontend bundle
+        shell: bash
+        run: |
+          if grep -R -E \
+            "GROQ_API_KEY|RETAILOPS_API_KEY|VITE_RETAILOPS_API_KEY" \
+            frontend/dist; then
+            echo "Forbidden secret reference found in frontend bundle."
+            exit 1
+          fi
+
+          echo "Frontend bundle security check passed."
+
+      - name: Build backend release image
+        run: |
+          docker build \
+            -t "retailops-ai:${{ needs.validate-version.outputs.version }}" \
+            .
+
+      - name: Build frontend release image
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL="" \
+            -t "retailops-frontend:${{ needs.validate-version.outputs.version }}" \
+            ./frontend
+
+  github-release:
+    name: Publish GitHub Release
+
+    needs:
+      - validate-version
+      - release-validation
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "RetailOps AI ${GITHUB_REF_NAME}" \
+            --generate-notes

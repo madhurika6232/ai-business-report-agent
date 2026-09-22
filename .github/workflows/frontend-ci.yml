@@ -1,0 +1,65 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-quality:
+    name: Frontend Quality
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Run frontend tests
+        run: npm test
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Verify production bundle contains no backend secrets
+        shell: bash
+        run: |
+          if grep -R -E \
+            "GROQ_API_KEY|RETAILOPS_API_KEY|VITE_RETAILOPS_API_KEY" \
+            dist; then
+            echo "Forbidden backend secret reference found in frontend bundle."
+            exit 1
+          fi
+
+          echo "Frontend production bundle secret scan passed."

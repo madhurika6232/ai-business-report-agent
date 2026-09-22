@@ -1,0 +1,85 @@
+name: Docker CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build:
+    name: Production Docker Build
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Docker Compose configuration
+        env:
+          GROQ_API_KEY: ci-placeholder-groq-key
+          RETAILOPS_API_KEY: ci-placeholder-retailops-key
+          RETAILOPS_ENV: testing
+        run: docker compose config --quiet
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -t retailops-ai:ci \
+            .
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL="" \
+            -t retailops-frontend:ci \
+            ./frontend
+
+      - name: Verify backend image exists
+        run: |
+          docker image inspect \
+            retailops-ai:ci \
+            >/dev/null
+
+      - name: Verify frontend image exists
+        run: |
+          docker image inspect \
+            retailops-frontend:ci \
+            >/dev/null
+
+      - name: Verify frontend image contains no source environment files
+        run: |
+          if docker run --rm \
+            --entrypoint sh \
+            retailops-frontend:ci \
+            -c \
+            'find /usr/share/nginx/html -type f \
+            \( -name ".env" -o -name ".env.production" \) \
+            | grep .'; then
+
+            echo "Environment file found in frontend image."
+            exit 1
+          fi
+
+          echo "Frontend image environment-file check passed."
+
+      - name: Show image summary
+        run: |
+          docker images \
+            --format \
+            "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" \
+            | grep retailops
