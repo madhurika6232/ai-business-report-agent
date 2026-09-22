@@ -1,0 +1,40 @@
+{
+  "evaluator": "review_classifier",
+  "category": "llm_classification",
+  "metrics": [
+    {
+      "name": "sentiment_accuracy",
+      "value": 88.0,
+      "threshold": 85.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "issue_accuracy",
+      "value": 100.0,
+      "threshold": 85.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "schema_validity_rate",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "failure_rate",
+      "value": 0.0,
+      "threshold": 0.0,
+      "status": "pass",
+      "details": {}
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 25,
+  "metadata": {
+    "dataset": "review_golden_set.csv"
+  }
+}

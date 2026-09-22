@@ -1,0 +1,56 @@
+{
+  "evaluator": "answer_quality",
+  "category": "answer_quality",
+  "metrics": [
+    {
+      "name": "relevance",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "evidence_use",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "clarity",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "caution",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "actionability",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "overall_answer_quality",
+      "value": 5.0,
+      "threshold": 4.0,
+      "status": "pass",
+      "details": {}
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 5,
+  "metadata": {
+    "dataset": "answer_quality_golden_set.csv",
+    "judge": "llm",
+    "scale": "1-5"
+  }
+}

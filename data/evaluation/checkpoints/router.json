@@ -1,0 +1,47 @@
+{
+  "evaluator": "router",
+  "category": "routing",
+  "metrics": [
+    {
+      "name": "exact_route_accuracy",
+      "value": 100.0,
+      "threshold": 95.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "macro_precision",
+      "value": 100.0,
+      "threshold": null,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "macro_recall",
+      "value": 100.0,
+      "threshold": null,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "macro_f1",
+      "value": 100.0,
+      "threshold": 90.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "failure_rate",
+      "value": 0.0,
+      "threshold": 0.0,
+      "status": "pass",
+      "details": {}
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 20,
+  "metadata": {
+    "dataset": "agent_routing_golden_set.csv"
+  }
+}

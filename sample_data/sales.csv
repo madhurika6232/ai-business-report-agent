@@ -1,0 +1,27 @@
+date,product,category,region,units_sold,unit_price,revenue,cost
+2024-01-01,Laptop Pro,Electronics,North,45,1200,54000,32000
+2024-01-08,Laptop Pro,Electronics,West,38,1200,45600,27200
+2024-01-15,Wireless Mouse,Accessories,North,105,25,2625,1050
+2024-01-22,Standing Desk,Furniture,South,32,600,19200,11520
+2024-01-29,Laptop Pro,Electronics,East,52,1200,62400,37200
+2024-02-05,Laptop Pro,Electronics,North,58,1200,69600,41760
+2024-02-12,Wireless Mouse,Accessories,South,145,25,3625,1450
+2024-02-19,Office Chair,Furniture,East,35,350,12250,7000
+2024-02-26,Laptop Pro,Electronics,West,62,1200,74400,44640
+2024-03-04,Laptop Pro,Electronics,North,70,1200,84000,50400
+2024-03-11,Wireless Mouse,Accessories,South,160,25,4000,1600
+2024-03-18,Standing Desk,Furniture,East,50,600,30000,18000
+2024-03-25,Laptop Pro,Electronics,West,75,1200,90000,54000
+2024-04-01,Laptop Pro,Electronics,North,80,1200,96000,57600
+2024-04-08,Wireless Mouse,Accessories,South,175,25,4375,1750
+2024-04-15,Office Chair,Furniture,East,42,350,14700,8400
+2024-04-22,Laptop Pro,Electronics,West,85,1200,102000,61200
+2024-04-29,Standing Desk,Furniture,North,55,600,33000,19800
+2024-05-06,Laptop Pro,Electronics,East,90,1200,108000,64800
+2024-05-13,Wireless Mouse,Accessories,West,190,25,4750,1900
+2024-05-20,Office Chair,Furniture,North,48,350,16800,9600
+2024-05-27,Laptop Pro,Electronics,South,95,1200,114000,68400
+2024-06-03,Laptop Pro,Electronics,North,100,1200,120000,72000
+2024-06-10,Wireless Mouse,Accessories,East,210,25,5250,2100
+2024-06-17,Standing Desk,Furniture,West,65,600,39000,23400
+2024-06-24,Laptop Pro,Electronics,South,105,1200,126000,75600

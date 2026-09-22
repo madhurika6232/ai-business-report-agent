@@ -1,0 +1,13 @@
+agent,user_query,expected_tools
+business,"How is the business performing?","business_summary"
+business,"Which product categories generate the most revenue?","business_summary|category_performance"
+business,"Which states generate the most revenue?","business_summary|state_performance"
+operations,"Which sellers have the worst delivery performance?","delivery_summary|high_risk_sellers"
+operations,"What is our cancellation rate?","cancellation_metrics"
+operations,"What are our freight costs?","freight_metrics"
+customer,"What are customers complaining about?","complaint_themes"
+customer,"How does late delivery affect customer satisfaction?","review_summary|delivery_review_impact|delay_severity_impact"
+customer,"Why did customer satisfaction decline?","review_summary|review_trend"
+risk,"Were there unusual delivery anomalies?","delivery_anomalies"
+risk,"Which orders have the highest delivery risk?","delivery_risk"
+risk,"What method should we use to forecast future revenue?","monthly_history|forecast_method"

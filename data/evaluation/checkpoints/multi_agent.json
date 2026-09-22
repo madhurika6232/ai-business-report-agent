@@ -1,0 +1,40 @@
+{
+  "evaluator": "multi_agent",
+  "category": "orchestration",
+  "metrics": [
+    {
+      "name": "routing_accuracy",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "execution_accuracy",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "answer_generation_rate",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "error_free_rate",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {}
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 5,
+  "metadata": {
+    "dataset": "multi_agent_golden_set.csv"
+  }
+}

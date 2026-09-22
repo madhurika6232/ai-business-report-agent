@@ -1,0 +1,26 @@
+{
+  "evaluator": "tool_selection",
+  "category": "tool_use",
+  "metrics": [
+    {
+      "name": "exact_tool_accuracy",
+      "value": 100.0,
+      "threshold": 95.0,
+      "status": "pass",
+      "details": {}
+    },
+    {
+      "name": "failure_rate",
+      "value": 0.0,
+      "threshold": 0.0,
+      "status": "pass",
+      "details": {}
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 12,
+  "metadata": {
+    "dataset": "agent_tool_golden_set.csv"
+  }
+}

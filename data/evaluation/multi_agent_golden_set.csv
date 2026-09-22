@@ -1,0 +1,6 @@
+user_query,expected_agents
+"Why did customer satisfaction decline when delivery performance got worse?","customer|operations"
+"Are customer delivery complaints supported by operational evidence?","customer|operations"
+"Did unusual delivery patterns coincide with lower customer satisfaction?","customer|operations|risk"
+"How are revenue trends and customer satisfaction changing?","business|customer"
+"Are delivery problems associated with negative customer reviews?","customer|operations"

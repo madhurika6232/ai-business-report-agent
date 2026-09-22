@@ -1,0 +1,39 @@
+{
+  "evaluator": "numeric_grounding",
+  "category": "grounding",
+  "metrics": [
+    {
+      "name": "raw_numeric_faithfulness",
+      "value": 99.05,
+      "threshold": null,
+      "status": "warning",
+      "details": {
+        "purpose": "diagnostic"
+      }
+    },
+    {
+      "name": "unsafe_answers_generated",
+      "value": 1.0,
+      "threshold": null,
+      "status": "warning",
+      "details": {
+        "purpose": "diagnostic"
+      }
+    },
+    {
+      "name": "guardrail_containment_rate",
+      "value": 100.0,
+      "threshold": 100.0,
+      "status": "pass",
+      "details": {
+        "purpose": "release_gate"
+      }
+    }
+  ],
+  "passed": true,
+  "completed": true,
+  "sample_size": 5,
+  "metadata": {
+    "dataset": "grounding_golden_set.csv"
+  }
+}

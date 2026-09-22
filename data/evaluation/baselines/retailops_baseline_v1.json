@@ -1,0 +1,19 @@
+{
+  "name": "retailops_baseline_v1",
+  "overall_score": 92.82,
+  "evaluator_scores": {
+    "router": 100.0,
+    "tool_selection": 100.0,
+    "review_classifier": 97.0,
+    "numeric_grounding": 66.35,
+    "guardrails": 100.0,
+    "multi_agent": 100.0,
+    "answer_quality": 100.0
+  },
+  "metadata": {
+    "release_decision": "pass",
+    "phase": 10,
+    "description": "Initial RetailOps AI evaluation baseline.",
+    "checkpoint_backed": true
+  }
+}

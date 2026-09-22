@@ -1,0 +1,35 @@
+# Virtual environments
+venv/
+.venv/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Generated outputs
+outputs/
+
+# Evaluation/runtime artifacts
+data/evaluation/checkpoints/
+
+# Reports
+reports/
+
+# OS files
+.DS_Store
+Thumbs.db
