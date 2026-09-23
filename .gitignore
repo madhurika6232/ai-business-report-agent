@@ -76,3 +76,9 @@ data/processed/
 models/*.joblib
 models/*.pkl
 models/*.pickle
+
+# ----------------------------------------------------------
+# Local release assets
+# ----------------------------------------------------------
+
+release-assets/

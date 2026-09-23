@@ -24,6 +24,9 @@ jobs:
 
     env:
       RETAILOPS_ENV: testing
+      CI_DATA_VERSION: ci-data-v1
+      CI_DATA_FILE: retailops-ci-data-v1.0.0.zip
+      CI_DATA_SHA256: 1B8B913CB823B45DAEBD8EA3BC188A99D54B090D4E731E604AF9DFE6FB006162
 
     steps:
       - name: Checkout repository
@@ -46,6 +49,33 @@ jobs:
 
       - name: Run API tests
         run: python -m pytest tests/api -q
+
+      - name: Download regression fixture
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$CI_DATA_VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "$CI_DATA_FILE" \
+            --dir /tmp/retailops-ci
+
+      - name: Verify regression fixture checksum
+        shell: bash
+        run: |
+          echo \
+            "$CI_DATA_SHA256  /tmp/retailops-ci/$CI_DATA_FILE" \
+            | sha256sum --check -
+
+      - name: Restore processed regression data
+        run: |
+          mkdir -p data/processed
+
+          unzip -q \
+            "/tmp/retailops-ci/$CI_DATA_FILE" \
+            -d data/processed
+
+          echo "Restored regression datasets:"
+          ls -lh data/processed
 
       - name: Run full Python regression
         run: python -m pytest -q
