@@ -26,7 +26,7 @@ jobs:
       RETAILOPS_ENV: testing
       CI_DATA_VERSION: ci-data-v1
       CI_DATA_FILE: retailops-ci-data-v1.0.0.zip
-      CI_DATA_SHA256: 1B8B913CB823B45DAEBD8EA3BC188A99D54B090D4E731E604AF9DFE6FB006162
+      CI_DATA_SHA256: 381E65B8054DD4339DB148A9A7DB353CECC54E815CE16144AEACEC28E7504789
 
     steps:
       - name: Checkout repository
@@ -66,16 +66,23 @@ jobs:
             "$CI_DATA_SHA256  /tmp/retailops-ci/$CI_DATA_FILE" \
             | sha256sum --check -
 
-      - name: Restore processed regression data
+      - name: Restore regression fixtures
         run: |
-          mkdir -p data/processed
-
           unzip -q \
             "/tmp/retailops-ci/$CI_DATA_FILE" \
-            -d data/processed
+            -d .
 
-          echo "Restored regression datasets:"
+          echo "Restored processed datasets:"
           ls -lh data/processed
+
+          echo "Restored ML model:"
+          ls -lh models/delivery_risk_model.joblib
+
+          test -f data/processed/orders_enriched.csv
+          test -f data/processed/seller_metrics.csv
+          test -f data/processed/category_metrics.csv
+          test -f data/processed/review_sample_classifications.csv
+          test -f models/delivery_risk_model.joblib
 
       - name: Run full Python regression
         run: python -m pytest -q
