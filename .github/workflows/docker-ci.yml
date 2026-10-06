@@ -29,11 +29,19 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create CI environment file
+        shell: bash
+        run: |
+          cat > .env <<'EOF'
+          RETAILOPS_ENV=testing
+          GROQ_API_KEY=ci-placeholder-groq-key
+          RETAILOPS_API_KEY=ci-placeholder-retailops-key
+          RETAILOPS_API_DEBUG=false
+          RETAILOPS_API_DOCS_ENABLED=false
+          RETAILOPS_CORS_ORIGINS=http://localhost:8080
+          EOF
+
       - name: Validate Docker Compose configuration
-        env:
-          GROQ_API_KEY: ci-placeholder-groq-key
-          RETAILOPS_API_KEY: ci-placeholder-retailops-key
-          RETAILOPS_ENV: testing
         run: docker compose config --quiet
 
       - name: Build backend image
@@ -62,6 +70,7 @@ jobs:
             >/dev/null
 
       - name: Verify frontend image contains no source environment files
+        shell: bash
         run: |
           if docker run --rm \
             --entrypoint sh \
