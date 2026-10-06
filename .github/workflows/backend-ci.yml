@@ -54,6 +54,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          mkdir -p /tmp/retailops-ci
+
           gh release download "$CI_DATA_VERSION" \
             --repo "$GITHUB_REPOSITORY" \
             --pattern "$CI_DATA_FILE" \
@@ -67,22 +69,107 @@ jobs:
             | sha256sum --check -
 
       - name: Restore regression fixtures
+        shell: python
         run: |
-          unzip -q \
-            "/tmp/retailops-ci/$CI_DATA_FILE" \
-            -d .
+          import os
+          import shutil
+          import zipfile
 
-          echo "Restored processed datasets:"
-          ls -lh data/processed
+          archive = os.path.join(
+              "/tmp/retailops-ci",
+              os.environ["CI_DATA_FILE"],
+          )
 
-          echo "Restored ML model:"
-          ls -lh models/delivery_risk_model.joblib
+          workspace = os.path.abspath(".")
 
-          test -f data/processed/orders_enriched.csv
-          test -f data/processed/seller_metrics.csv
-          test -f data/processed/category_metrics.csv
-          test -f data/processed/review_sample_classifications.csv
-          test -f models/delivery_risk_model.joblib
+          with zipfile.ZipFile(archive) as source:
+              for member in source.infolist():
+                  normalized = member.filename.replace(
+                      "\\",
+                      "/",
+                  )
+
+                  normalized = normalized.lstrip("/")
+
+                  if (
+                      not normalized
+                      or normalized.endswith("/")
+                  ):
+                      continue
+
+                  destination = os.path.abspath(
+                      os.path.join(
+                          workspace,
+                          normalized,
+                      )
+                  )
+
+                  if os.path.commonpath(
+                      [
+                          workspace,
+                          destination,
+                      ]
+                  ) != workspace:
+                      raise RuntimeError(
+                          "Unsafe archive path: "
+                          f"{member.filename}"
+                      )
+
+                  parent = os.path.dirname(
+                      destination
+                  )
+
+                  os.makedirs(
+                      parent,
+                      exist_ok=True,
+                  )
+
+                  with source.open(member) as src:
+                      with open(
+                          destination,
+                          "wb",
+                      ) as dst:
+                          shutil.copyfileobj(
+                              src,
+                              dst,
+                          )
+
+          required = [
+              (
+                  "data/processed/"
+                  "orders_enriched.csv"
+              ),
+              (
+                  "data/processed/"
+                  "seller_metrics.csv"
+              ),
+              (
+                  "data/processed/"
+                  "category_metrics.csv"
+              ),
+              (
+                  "data/processed/"
+                  "review_sample_classifications.csv"
+              ),
+              (
+                  "models/"
+                  "delivery_risk_model.joblib"
+              ),
+          ]
+
+          for path in required:
+              if not os.path.isfile(path):
+                  raise FileNotFoundError(
+                      "Missing regression fixture: "
+                      f"{path}"
+                  )
+
+              size = os.path.getsize(path)
+
+              print(
+                  f"Restored: {path} "
+                  f"({size:,} bytes)"
+              )
 
       - name: Run full Python regression
         run: python -m pytest -q
