@@ -48,6 +48,11 @@ jobs:
 
     timeout-minutes: 30
 
+    env:
+      CI_DATA_VERSION: ci-data-v1
+      CI_DATA_FILE: retailops-ci-data-v1.0.0.zip
+      CI_DATA_SHA256: 381E65B8054DD4339DB148A9A7DB353CECC54E815CE16144AEACEC28E7504789
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -66,6 +71,127 @@ jobs:
       - name: Validate backend dependencies
         run: pip check
 
+      - name: Download regression fixture
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/retailops-ci
+
+          gh release download "$CI_DATA_VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "$CI_DATA_FILE" \
+            --dir /tmp/retailops-ci
+
+      - name: Verify regression fixture checksum
+        shell: bash
+        run: |
+          echo \
+            "$CI_DATA_SHA256  /tmp/retailops-ci/$CI_DATA_FILE" \
+            | sha256sum --check -
+
+      - name: Restore regression fixtures
+        shell: python
+        run: |
+          import os
+          import shutil
+          import zipfile
+
+          archive = os.path.join(
+              "/tmp/retailops-ci",
+              os.environ["CI_DATA_FILE"],
+          )
+
+          workspace = os.path.abspath(".")
+
+          with zipfile.ZipFile(archive) as source:
+              for member in source.infolist():
+                  normalized = member.filename.replace(
+                      "\\",
+                      "/",
+                  )
+
+                  normalized = normalized.lstrip("/")
+
+                  if (
+                      not normalized
+                      or normalized.endswith("/")
+                  ):
+                      continue
+
+                  destination = os.path.abspath(
+                      os.path.join(
+                          workspace,
+                          normalized,
+                      )
+                  )
+
+                  if os.path.commonpath(
+                      [
+                          workspace,
+                          destination,
+                      ]
+                  ) != workspace:
+                      raise RuntimeError(
+                          "Unsafe archive path: "
+                          f"{member.filename}"
+                      )
+
+                  parent = os.path.dirname(
+                      destination
+                  )
+
+                  os.makedirs(
+                      parent,
+                      exist_ok=True,
+                  )
+
+                  with source.open(member) as src:
+                      with open(
+                          destination,
+                          "wb",
+                      ) as dst:
+                          shutil.copyfileobj(
+                              src,
+                              dst,
+                          )
+
+          required = [
+              (
+                  "data/processed/"
+                  "orders_enriched.csv"
+              ),
+              (
+                  "data/processed/"
+                  "seller_metrics.csv"
+              ),
+              (
+                  "data/processed/"
+                  "category_metrics.csv"
+              ),
+              (
+                  "data/processed/"
+                  "review_sample_classifications.csv"
+              ),
+              (
+                  "models/"
+                  "delivery_risk_model.joblib"
+              ),
+          ]
+
+          for path in required:
+              if not os.path.isfile(path):
+                  raise FileNotFoundError(
+                      "Missing regression fixture: "
+                      f"{path}"
+                  )
+
+              size = os.path.getsize(path)
+
+              print(
+                  f"Restored: {path} "
+                  f"({size:,} bytes)"
+              )
+
       - name: Run backend regression
         env:
           RETAILOPS_ENV: testing
@@ -81,6 +207,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high
 
       - name: Run frontend tests
         working-directory: frontend
@@ -100,6 +230,7 @@ jobs:
           if grep -R -E \
             "GROQ_API_KEY|RETAILOPS_API_KEY|VITE_RETAILOPS_API_KEY" \
             frontend/dist; then
+
             echo "Forbidden secret reference found in frontend bundle."
             exit 1
           fi
