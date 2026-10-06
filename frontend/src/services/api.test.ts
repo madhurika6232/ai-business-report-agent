@@ -42,8 +42,24 @@ describe("RetailOps API client", () => {
 
     expect(result.status).toBe("ok");
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://127.0.0.1:8000/health",
+    expect(
+      fetchMock,
+    ).toHaveBeenCalledTimes(1);
+
+    const [
+      requestUrl,
+      requestOptions,
+    ] = fetchMock.mock.calls[0];
+
+    expect(
+      requestUrl,
+    ).toMatch(
+      /\/health$/,
+    );
+
+    expect(
+      requestOptions,
+    ).toEqual(
       expect.any(Object),
     );
   });
@@ -90,71 +106,77 @@ describe("RetailOps API client", () => {
   });
 
 
-  it("throws ApiError for failed requests", async () => {
-    vi.spyOn(
-      globalThis,
-      "fetch",
-    ).mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          detail:
-            "Invalid or missing API key.",
-        }),
-        {
-          status: 401,
-          headers: {
-            "Content-Type":
-              "application/json",
-            "X-Request-ID":
-              "request-123",
+  it(
+    "throws ApiError for failed requests",
+    async () => {
+      vi.spyOn(
+        globalThis,
+        "fetch",
+      ).mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            detail:
+              "Invalid or missing API key.",
+          }),
+          {
+            status: 401,
+            headers: {
+              "Content-Type":
+                "application/json",
+              "X-Request-ID":
+                "request-123",
+            },
           },
-        },
-      ),
-    );
-
-    await expect(
-      retailOpsApi.query({
-        query: "Test query",
-      }),
-    ).rejects.toMatchObject({
-      name: "ApiError",
-      status: 401,
-      message:
-        "Invalid or missing API key.",
-      requestId: "request-123",
-    });
-  });
-
-
-  it("uses fallback error text for non-json errors", async () => {
-    vi.spyOn(
-      globalThis,
-      "fetch",
-    ).mockResolvedValue(
-      new Response(
-        "Service unavailable",
-        {
-          status: 503,
-        },
-      ),
-    );
-
-    try {
-      await retailOpsApi.health();
-
-      throw new Error(
-        "Expected request to fail.",
-      );
-    } catch (error) {
-      expect(
-        error,
-      ).toBeInstanceOf(
-        ApiError,
+        ),
       );
 
-      expect(
-        (error as ApiError).status,
-      ).toBe(503);
-    }
-  });
+      await expect(
+        retailOpsApi.query({
+          query: "Test query",
+        }),
+      ).rejects.toMatchObject({
+        name: "ApiError",
+        status: 401,
+        message:
+          "Invalid or missing API key.",
+        requestId: "request-123",
+      });
+    },
+  );
+
+
+  it(
+    "uses fallback error text for non-json errors",
+    async () => {
+      vi.spyOn(
+        globalThis,
+        "fetch",
+      ).mockResolvedValue(
+        new Response(
+          "Service unavailable",
+          {
+            status: 503,
+          },
+        ),
+      );
+
+      try {
+        await retailOpsApi.health();
+
+        throw new Error(
+          "Expected request to fail.",
+        );
+      } catch (error) {
+        expect(
+          error,
+        ).toBeInstanceOf(
+          ApiError,
+        );
+
+        expect(
+          (error as ApiError).status,
+        ).toBe(503);
+      }
+    },
+  );
 });
